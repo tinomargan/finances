@@ -3,19 +3,35 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { db } from "../config/firebase";
+import { addDoc, collection, Timestamp } from 'firebase/firestore'
+import getItemsList from "./Content";
+
+/* const { Formik } = formik; */
 
 const NewItemModal = (props) => {
+    const itemsCollectionReference = collection(db, "items")
+    
     const todayDate = new Date().toLocaleDateString('en-ca');
     
+
+
+    /* INICIJALNE VRIJEDNOSTI */
+
     const [newItem, setNewItem] = React.useState({
         desc: "",
         incomeExpense: null,
-        amount: "",
+        amount: 0,
         paymentType: null,
-        eventDate: todayDate,
-        paidDate: null
+        eventDate: null,
+        paidDate: null,
+        dateCreated: todayDate
     });
     
+
+
+    /* EVIDENTIRANJE PROMJENA */
+
     const handleChange = (e) => {
         console.log(e.target.value);
         setNewItem((newItem) => ({
@@ -23,9 +39,69 @@ const NewItemModal = (props) => {
            [e.target.name]: e.target.type === "radio" ? e.target.id : e.target.value
         }));
     }
+
     
-    function handleSave(){
-        console.log(newItem);
+    
+    /* GUMB "DANAS" */
+
+
+
+    const handleTodayButton = (e) => {
+        if (e.target.id === "danas-event-date") {
+            document.getElementById("eventDate").value = todayDate;
+            e.target.value = todayDate;
+            e.target.name = "eventDate";
+            handleChange(e);
+        } else if (e.target.id === "danas-paid-date") {
+            document.getElementById("paidDate").value = todayDate;
+            e.target.value = todayDate;
+            e.target.name = "paidDate";
+            handleChange(e);
+        }
+    }
+
+
+
+    /* SPREMANJE STAVKE U BAZU */
+
+    const handleSave = async () => {
+        try {
+            if (newItem.eventDate != null) {
+                const eD = new Timestamp;
+                eD.seconds = Date.parse(newItem.eventDate)/1000;
+                eD.nanoseconds = 0;
+                newItem.eventDate = eD;
+            }
+            
+            if (newItem.paidDate != null) {
+                const pD = new Timestamp;
+                pD.seconds = Date.parse(newItem.paidDate)/1000;
+                pD.nanoseconds = 0;
+                newItem.paidDate = pD;
+            }
+            
+            newItem.dateCreated = todayDate;
+            let dC = null;
+            dC = new Timestamp;
+            dC.seconds = Date.parse(newItem.dateCreated)/1000;
+            dC.nanoseconds = 0;
+            newItem.dateCreated = dC;
+            console.log(newItem.dateCreated);
+            
+            await addDoc(itemsCollectionReference, {
+                desc: newItem.desc,
+                incomeExpense: newItem.incomeExpense,
+                amount: parseFloat(newItem.amount),
+                paymentType: newItem.paymentType,
+                eventDate: newItem.eventDate,
+                paidDate: newItem.paidDate,
+                dateCreated: newItem.dateCreated
+            })
+
+            /* getItemsList(); */
+        } catch (error) {
+            console.error(error);
+        }
         props.close();
     }
 
@@ -49,13 +125,14 @@ const NewItemModal = (props) => {
                             rows={2}
                             autoFocus
                             defaultValue={newItem.desc}
+                            name="desc"
                             onChange={handleChange}
                         /> 
                     </Form.Group>
                     <Form.Group
                         controlId="incomeExpense"
                         onChange={handleChange}
-                    >
+                        >
                         <Form.Check
                             type="radio"
                             inline
@@ -75,6 +152,8 @@ const NewItemModal = (props) => {
                     <Form.Label>Iznos</Form.Label>
                     <InputGroup className="mb-3">
                         <Form.Control
+                            type='number'
+                            name="amount"
                             aria-label='Iznos'
                             onChange={handleChange}
                         />
@@ -100,27 +179,51 @@ const NewItemModal = (props) => {
                         />
                     </Form.Group>
                     <br></br>
-                    <Form.Group className="mb-3" controlId="eventDate">
-                        <Form.Label>Datum događaja</Form.Label>
+                    <Form.Label>Datum događaja</Form.Label>
+                    <Form.Group className="mb-3 d-flex align-items-end" controlId="eventDate">
                         <Form.Control
+                            name="eventDate"
                             type='date'
-                            defaultValue={newItem.eventDate}
-                            onChange={handleChange}
-                            />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="paidDate">
-                        <Form.Label>Datum plaćanja</Form.Label>
-                        <Form.Control
-                            type='date'
+                            /* onFocus={(e) => e.currentTarget.focus()} */
+                            /* defaultValue={newItem.eventDate} */
                             onChange={handleChange}
                         />
+                        <Button variant="primary" id="danas-event-date" onClick={handleTodayButton}>
+                            Danas
+                        </Button>
+                    </Form.Group>
+                    <Form.Label>Datum plaćanja</Form.Label>
+                    <Form.Group className="mb-3 d-flex align-items-end" controlId="paidDate">
+                        <Form.Control
+                            name="paidDate"
+                            type='date'
+                            /* onFocus={(e) => console.log(e)} */
+                            onChange={handleChange}
+                        />
+                        <Button variant="primary" id="danas-paid-date" onClick={handleTodayButton}>
+                            Danas
+                        </Button>
                     </Form.Group>
                 </Form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
                         variant="secondary"
-                        onClick={props.close}
+                        onClick={
+                            newItem.desc != ""
+                            ? props.ask
+                            : newItem.amount != 0
+                                ? props.ask
+                                : newItem.incomeExpense != null
+                                    ? props.ask
+                                    : newItem.paymentType != null
+                                        ? props.ask
+                                        : newItem.eventDate != null
+                                            ? props.ask
+                                            : newItem.paidDate != null
+                                                ? props.ask
+                                                : props.close
+                        }
                     >
                         Odustani
                     </Button>
@@ -128,7 +231,7 @@ const NewItemModal = (props) => {
                         variant="primary"
                         onClick={handleSave}
                     >
-                        Spremi promjene
+                        Unesi novu stavku
                     </Button>
                 </Modal.Footer>
             </Modal>
