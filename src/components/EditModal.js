@@ -4,41 +4,47 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { db } from "../config/firebase";
-import { addDoc, collection, Timestamp } from 'firebase/firestore'
+import { collection, Timestamp, updateDoc } from 'firebase/firestore'
+import Content from './Content';
 
-const EditModal = (props) => {
+const EditModal = ({selectedItem, show, close}) => {
     const itemsCollectionReference = collection(db, "items")
 
-    /* const formRef = React.useRef(null); */
-    
     const todayDate = new Date().toLocaleDateString('en-ca');
-    
+
 
 
     /* INICIJALNE VRIJEDNOSTI */
 
-    const [editItem, setEditItem] = React.useState({
-        desc: "",
-        incomeExpense: null,
-        amount: 0,
-        paymentType: null,
-        eventDate: null,
-        paidDate: null,
-        dateCreated: todayDate
-    });
+    const [editItem, setEditItem] = React.useState(selectedItem);
+
+
+
+    /* PROBA EDIT */
+
+    /* const editItem = async (id, desc) => {
+        const desc = desc;
+        await updateDoc()
+    }
     
+    const setEditItem = () => {
+        console.log(desc);
+    } */
 
 
     /* EVIDENTIRANJE PROMJENA */
 
     const handleChange = (e) => {
         console.log(e.target.value);
-        setEditItem((editItem) => ({
-            ...editItem,
-           [e.target.name]: e.target.type === "radio" ? e.target.id : e.target.value
-        }));
-    }
+        setEditItem((prevEditItem) => { 
+            console.log(e.target.value);
 
+            return({
+            ...prevEditItem,
+           [e.target.name]: e.target.type === "radio" ? e.target.id : e.target.value
+        })});
+    }
+    
     
     
     /* GUMB "DANAS" */
@@ -83,30 +89,25 @@ const EditModal = (props) => {
             dC.nanoseconds = 0;
             editItem.dateCreated = dC;
             
-            await addDoc(itemsCollectionReference, {
-                desc: editItem.desc,
-                incomeExpense: editItem.incomeExpense,
-                amount: parseFloat(editItem.amount),
-                paymentType: editItem.paymentType,
-                eventDate: editItem.eventDate,
-                paidDate: editItem.paidDate,
-                dateCreated: editItem.dateCreated
+            await updateDoc(itemsCollectionReference, {
+                ...editItem,
+                amount: parseFloat(editItem.amount)
             })
 
             /* getItemsList(); */
         } catch (error) {
             console.error(error);
         }
-        props.close();
+        close();
     }
 
 
-
+console.log(selectedItem);
     return (
         <div>
             <Modal
-                show={props.show}
-                onHide={props.close}
+                show={show}
+                onHide={close}
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Nova stavka</Modal.Title>
@@ -118,31 +119,29 @@ const EditModal = (props) => {
                         <Form.Control
                             as="textarea"
                             rows={2}
-                            autoFocus
-                            defaultValue={editItem.desc}
                             name="desc"
+                            value={editItem.desc}
                             onChange={handleChange}
                         /> 
                     </Form.Group>
-                    <Form.Group
-                        controlId="incomeExpense"
+                    <Form.Check
+                        type="radio"
+                        inline
+                        label="Prihod"
+                        name='incomeExpense'
+                        id='prihod'
+                        checked={editItem.incomeExpense === "prihod"}
                         onChange={handleChange}
-                        >
-                        <Form.Check
-                            type="radio"
-                            inline
-                            label="Prihod"
-                            name='incomeExpense'
-                            id='prihod'
-                        />
-                        <Form.Check className='mb-3'
-                            type="radio"
-                            inline
-                            label="Trošak"
-                            name='incomeExpense'
-                            id='trosak'
-                        />
-                    </Form.Group>
+                    />
+                    <Form.Check className='mb-3'
+                        type="radio"
+                        inline
+                        label="Trošak"
+                        name='incomeExpense'
+                        id='trosak'
+                        checked={editItem.incomeExpense === "trosak"}
+                        onChange={handleChange}
+                    />
                     <br></br>
                     <Form.Label>Iznos</Form.Label>
                     <InputGroup className="mb-3">
@@ -151,36 +150,35 @@ const EditModal = (props) => {
                             name="amount"
                             aria-label='Iznos'
                             onChange={handleChange}
+                            value={editItem.amount}
                         />
                         <InputGroup.Text>€</InputGroup.Text>
                     </InputGroup>
-                    <Form.Group
-                        controlId="paymentType"
+                    <Form.Check
+                        type="radio"
+                        inline
+                        label="Gotovina"
+                        name='paymentType'
+                        id='gotovina'
+                        checked={editItem.paymentType === "gotovina"}
                         onChange={handleChange}
-                    >
-                        <Form.Check
-                            type="radio"
-                            inline
-                            label="Gotovina"
-                            name='paymentType'
-                            id='gotovina'
-                        />
-                        <Form.Check className='mb-3'
-                            type="radio"
-                            inline
-                            label="Kartica"
-                            name='paymentType'
-                            id='kartica'
-                        />
-                    </Form.Group>
+                    />
+                    <Form.Check className='mb-3'
+                        type="radio"
+                        inline
+                        label="Kartica"
+                        name='paymentType'
+                        id='kartica'
+                        checked={editItem.paymentType === "kartica"}
+                        onChange={handleChange}
+                    />
                     <br></br>
                     <Form.Label>Datum događaja</Form.Label>
                     <Form.Group className="mb-3 d-flex align-items-end" controlId="eventDate">
                         <Form.Control
                             name="eventDate"
                             type='date'
-                            /* onFocus={(e) => e.currentTarget.focus()} */
-                            /* defaultValue={editItem.eventDate} */
+                            value={editItem.eventDate}
                             onChange={handleChange}
                         />
                         <Button variant="primary" id="danas-event-date" onClick={handleTodayButton}>
@@ -192,7 +190,7 @@ const EditModal = (props) => {
                         <Form.Control
                             name="paidDate"
                             type='date'
-                            /* onFocus={(e) => console.log(e)} */
+                            value={editItem.paidDate}
                             onChange={handleChange}
                         />
                         <Button variant="primary" id="danas-paid-date" onClick={handleTodayButton}>
@@ -204,21 +202,21 @@ const EditModal = (props) => {
                 <Modal.Footer>
                     <Button
                         variant="secondary"
-                        onClick={
+                        /* onClick={
                             editItem.desc != ""
-                            ? props.ask
+                            ? ask
                             : editItem.amount != 0
-                                ? props.ask
+                                ? ask
                                 : editItem.incomeExpense != null
-                                    ? props.ask
+                                    ? ask
                                     : editItem.paymentType != null
-                                        ? props.ask
+                                        ? ask
                                         : editItem.eventDate != null
-                                            ? props.ask
+                                            ? ask
                                             : editItem.paidDate != null
-                                                ? props.ask
-                                                : props.close
-                        }
+                                                ? ask
+                                                : close
+                        } */
                     >
                         Odustani
                     </Button>
@@ -226,7 +224,7 @@ const EditModal = (props) => {
                         variant="primary"
                         onClick={handleSave}
                     >
-                        Unesi novu stavku
+                        Spremi promjene
                     </Button>
                 </Modal.Footer>
             </Modal>

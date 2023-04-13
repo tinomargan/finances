@@ -2,12 +2,14 @@ import React from "react";
 import edit_icon from "../images/edit-icon.png";
 import EditModal from "./EditModal";
 import { db } from "../config/firebase";
-import { getDocs, collection } from 'firebase/firestore';
+import { doc, getDocs, collection, updateDoc } from 'firebase/firestore';
 import AreYouSureModal from "./AreYouSureModal";
+
 
 export default function Content(props) {
     const [itemsList, setItemsList] = React.useState([]);
     const [showEditModal, setShowEditModal] = React.useState(false);
+    const [selectedItem, setSelectedItem] = React.useState(null);
 
 
 
@@ -35,10 +37,11 @@ export default function Content(props) {
 
     return(
         <div className="content--wrapper">
-            <EditModal
+            {showEditModal && <EditModal
                 show={showEditModal}
-                close={() => setShowEditModal(false)} 
-            />
+                close={() => setShowEditModal(false)}
+                selectedItem={selectedItem}
+            />}
             {itemsList.map((items) => (
                 <div className="content--item" key={items.id}>
                     <div className="content--item-desc">
@@ -85,7 +88,10 @@ export default function Content(props) {
                         }
                     </div>
                     <div className="content--item-edit">
-                        <img src={edit_icon} className="content--item-edit-img" onClick={() => setShowEditModal(true)}/>
+                        <img src={edit_icon} className="content--item-edit-img" onClick={() => {
+                            setShowEditModal(true);
+                            setSelectedItem(items);
+                            }}/>
                     </div>
                 </div>
             ))}

@@ -113,7 +113,7 @@ const NewItemModal = (props) => {
                 fullscreen
                 animation={false}
             >
-                <Modal.Header closeButton>
+                <Modal.Header>
                     <Modal.Title>Nova stavka</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -124,7 +124,6 @@ const NewItemModal = (props) => {
                             as="textarea"
                             rows={2}
                             autoFocus
-                            defaultValue={newItem.desc}
                             name="desc"
                             onChange={handleChange}
                         /> 
