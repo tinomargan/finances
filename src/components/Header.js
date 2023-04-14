@@ -1,27 +1,27 @@
 import React from "react";
 import { db } from "../config/firebase";
-import {getDocs, collection} from 'firebase/firestore'
+import { getDocs, collection } from "firebase/firestore";
 
 export default function Header() {
-    const [itemsList, setItemsList] = React.useState([])
+    const [itemsList, setItemsList] = React.useState([]);
 
-    const itemsCollectionReference = collection(db, "items")
+    const itemsCollectionReference = collection(db, "items");
 
     React.useEffect(() => {
         const getItemsList = async () => {
             try {
-                const data = await getDocs(itemsCollectionReference)
-                const filteredData = data.docs.map((doc) => ({
+                const data = await getDocs(itemsCollectionReference);
+                const filteredData = data.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id
-                }))
+                }));
                 setItemsList(filteredData);
             } catch (error) {
                 console.error(error);
             }
-        }
-        getItemsList()
-    }, [])
+        };
+        getItemsList();
+    }, []);
 
     var totalCurrent = 0;
     var totalCurrentPlus = 0;
@@ -37,111 +37,118 @@ export default function Header() {
     var totalUkupnoMinus = 0;
 
     /* IZRAČUN - UKUPNO */
-    
+
     function getCurrentSum() {
-        itemsList.map(
-            (items) => {
-                if (items.incomeExpense === "prihod" && items.paidDate != null) {
-                    totalCurrentPlus = parseFloat(totalCurrentPlus) + parseFloat(items.amount);
-                }
-                else if (items.incomeExpense === "trosak" && items.paidDate != null) {
-                    totalCurrentMinus = parseFloat(totalCurrentMinus) + parseFloat(items.amount);
-                }
-                totalCurrent = (parseFloat(totalCurrentPlus)-parseFloat(totalCurrentMinus)).toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2
-                })
+        itemsList.map(items => {
+            if (items.incomeExpense === "prihod" && items.paidDate != null) {
+                totalCurrentPlus =
+                    parseFloat(totalCurrentPlus) + parseFloat(items.amount);
+            } else if (
+                items.incomeExpense === "trosak" &&
+                items.paidDate != null
+            ) {
+                totalCurrentMinus =
+                    parseFloat(totalCurrentMinus) + parseFloat(items.amount);
             }
-        )
-        return totalCurrent
+            totalCurrent = (
+                parseFloat(totalCurrentPlus) - parseFloat(totalCurrentMinus)
+            ).toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+        });
+        return totalCurrent;
     }
-    
+
     /* IZRAČUN - GOTOVINA */
-    
+
     function getCashSum() {
-        itemsList.map(
-            (items) => {
-                if (items.incomeExpense === "prihod" && items.paymentType === "gotovina" && items.paidDate != null) {
-                    totalGotovinaPlus = parseFloat(totalGotovinaPlus) + parseFloat(items.amount);
-                }
-                else if (items.incomeExpense === "trosak" && items.paymentType === "gotovina" && items.paidDate != null) {
-                    totalGotovinaMinus = parseFloat(totalGotovinaMinus) + parseFloat(items.amount);
-                }
-                totalGotovina = (parseFloat(totalGotovinaPlus)-parseFloat(totalGotovinaMinus)).toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2
-                })
+        itemsList.map(items => {
+            if (
+                items.incomeExpense === "prihod" &&
+                items.paymentType === "gotovina" &&
+                items.paidDate != null
+            ) {
+                totalGotovinaPlus =
+                    parseFloat(totalGotovinaPlus) + parseFloat(items.amount);
+            } else if (
+                items.incomeExpense === "trosak" &&
+                items.paymentType === "gotovina" &&
+                items.paidDate != null
+            ) {
+                totalGotovinaMinus =
+                    parseFloat(totalGotovinaMinus) + parseFloat(items.amount);
             }
-        )
-        return totalGotovina
+            totalGotovina = (
+                parseFloat(totalGotovinaPlus) - parseFloat(totalGotovinaMinus)
+            ).toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+        });
+        return totalGotovina;
     }
-        
+
     /* IZRAČUN - KARTICA */
-    
+
     function getCardSum() {
-        itemsList.map(
-            (items) => {
-                if (items.incomeExpense === "prihod" && items.paymentType === "kartica" && items.paidDate != null) {
-                    totalKarticaPlus = parseFloat(totalKarticaPlus) + parseFloat(items.amount);
-                }
-                else if (items.incomeExpense === "trosak" && items.paymentType === "kartica" && items.paidDate != null) {
-                    totalKarticaMinus = parseFloat(totalKarticaMinus) + parseFloat(items.amount);
-                }
-                totalKartica = (parseFloat(totalKarticaPlus)-parseFloat(totalKarticaMinus)).toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2
-                })
+        itemsList.map(items => {
+            if (
+                items.incomeExpense === "prihod" &&
+                items.paymentType === "kartica" &&
+                items.paidDate != null
+            ) {
+                totalKarticaPlus =
+                    parseFloat(totalKarticaPlus) + parseFloat(items.amount);
+            } else if (
+                items.incomeExpense === "trosak" &&
+                items.paymentType === "kartica" &&
+                items.paidDate != null
+            ) {
+                totalKarticaMinus =
+                    parseFloat(totalKarticaMinus) + parseFloat(items.amount);
             }
-        )
-        return totalKartica
+            totalKartica = (
+                parseFloat(totalKarticaPlus) - parseFloat(totalKarticaMinus)
+            ).toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+        });
+        return totalKartica;
     }
-            
+
     /* IZRAČUN - BUDUĆE STANJE */
-    
+
     function getTotalSum() {
-        itemsList.map(
-            (items) => {
-                if (items.incomeExpense === "prihod") {
-                    totalUkupnoPlus = parseFloat(totalUkupnoPlus) + parseFloat(items.amount);
-                }
-                else {
-                    totalUkupnoMinus = parseFloat(totalUkupnoMinus) + parseFloat(items.amount);
-                }
-                totalUkupno = (parseFloat(totalUkupnoPlus)-parseFloat(totalUkupnoMinus)).toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2
-                })
+        itemsList.map(items => {
+            if (items.incomeExpense === "prihod") {
+                totalUkupnoPlus =
+                    parseFloat(totalUkupnoPlus) + parseFloat(items.amount);
+            } else {
+                totalUkupnoMinus =
+                    parseFloat(totalUkupnoMinus) + parseFloat(items.amount);
             }
-        )
-        return totalUkupno
+            totalUkupno = (
+                parseFloat(totalUkupnoPlus) - parseFloat(totalUkupnoMinus)
+            ).toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            });
+        });
+        return totalUkupno;
     }
-            
-    return(
+
+    return (
         <div className="header--wrapper">
-            <div className="header--item-1-text">
-                Trenutno stanje
-            </div>
-            <div className="header--item-1-content">
-                {getCurrentSum()} €
-            </div>
-            <div className="header--item-2-text">
-                Gotovina
-            </div>
-            <div className="header--item-2-content">
-                {getCashSum()} €
-            </div>
-            <div className="header--item-3-text">
-                Kartica
-            </div>
-            <div className="header--item-3-content">
-                {getCardSum()} €
-            </div>
-            <div className="header--item-4-text">
-                Buduće stanje
-            </div>
-            <div className="header--item-4-content">
-                {getTotalSum()} €
-            </div>
+            <div className="header--item-1-text">Trenutno stanje</div>
+            <div className="header--item-1-content">{getCurrentSum()} €</div>
+            <div className="header--item-2-text">Gotovina</div>
+            <div className="header--item-2-content">{getCashSum()} €</div>
+            <div className="header--item-3-text">Kartica</div>
+            <div className="header--item-3-content">{getCardSum()} €</div>
+            <div className="header--item-4-text">Buduće stanje</div>
+            <div className="header--item-4-content">{getTotalSum()} €</div>
         </div>
-    )
+    );
 }

@@ -1,10 +1,10 @@
-import React from 'react';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
+import React from "react";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
 
-const AreYouSureModal = (props) => {
+const AreYouSureModal = props => {
     return (
         <div>
             <Modal
@@ -14,7 +14,9 @@ const AreYouSureModal = (props) => {
                 animation={false}
             >
                 <Modal.Header>
-                    <Modal.Title>Jeste li sigurni da želite odustati?</Modal.Title>
+                    <Modal.Title>
+                        Jeste li sigurni da želite odustati?
+                    </Modal.Title>
                 </Modal.Header>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={props.odustani}>
@@ -27,6 +29,6 @@ const AreYouSureModal = (props) => {
             </Modal>
         </div>
     );
-}
+};
 
 export default AreYouSureModal;

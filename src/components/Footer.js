@@ -10,61 +10,55 @@ import NewItemModal from "./NewItemModal";
 
 export default function Footer(props) {
     const [showNewItemModal, setShowNewItemModal] = React.useState(false);
-    const [showAreYouSureModal, setShowAreYouSureModal] = React.useState(false)
+    const [showAreYouSureModal, setShowAreYouSureModal] = React.useState(false);
 
     const handleNewItemModalAsk = () => {
         setShowAreYouSureModal(true);
-    }
+    };
 
     const handleNewItemModalClose = () => {
         setShowNewItemModal(false);
-    }
+    };
 
     const handleOdustani = () => {
         handleNewItemModalClose();
         setShowAreYouSureModal(false);
-    }
+    };
 
     const handleNemojOdustati = () => {
         setShowAreYouSureModal(false);
-    }
-
-
+    };
 
     /* DROPDOWN MENU */
 
     const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
-    
+
     const handleIsOpen = () => {
         setIsDropdownOpen(!isDropdownOpen);
         console.log(isDropdownOpen);
-    }
-    
+    };
+
     const handleNovaStavka = () => {
         console.log("Nova stavka");
         setIsDropdownOpen(false);
         setShowNewItemModal(true);
     };
-    
+
     const handlePretraga = () => {
         console.log("Pretraga");
         setIsDropdownOpen(false);
     };
-    
+
     const handleFilter = () => {
         console.log("Filter");
         setIsDropdownOpen(false);
     };
-    
-
 
     /* CLOSE THE DROPDOWN MENU ON OUTSIDE CLICK */
 
-    
-
     /* */
 
-    return(
+    return (
         <div className={"footer--wrapper"}>
             <NewItemModal
                 show={showNewItemModal}
@@ -88,27 +82,39 @@ export default function Footer(props) {
                 <div className="footer--item-4">
                 <img src={dots_icon} className="footer--item-4-img"/>
             </div> */}
-            <div className="footer--item-1">
-                SVE
-            </div>
-            <div className="footer--item-2">
-                PRIHODI
-            </div>
-            <div className="footer--item-3">
-                TROŠKOVI
-            </div>
-            <div className="footer--item-4" onClick={handleIsOpen} /* ref={dropdownRef} */>
-                <img src={dots_icon} className="footer--item-4-img"/>
+            <div className="footer--item-1">SVE</div>
+            <div className="footer--item-2">PRIHODI</div>
+            <div className="footer--item-3">TROŠKOVI</div>
+            <div
+                className="footer--item-4"
+                onClick={handleIsOpen} /* ref={dropdownRef} */
+            >
+                <img src={dots_icon} className="footer--item-4-img" />
             </div>
             <div className="footer--dropdown" /* ref={dropdownRef} */>
                 {isDropdownOpen ? (
                     <ul className="footer--dropdown-list">
-                        <li className="footer--dropdown-list-item" onClick={handleNovaStavka}>Nova stavka</li>
-                        <li className="footer--dropdown-list-item" onClick={handlePretraga}>Pretraga</li>
-                        <li className="footer--dropdown-list-item" onClick={handleFilter}>Filter</li>
+                        <li
+                            className="footer--dropdown-list-item"
+                            onClick={handleNovaStavka}
+                        >
+                            Nova stavka
+                        </li>
+                        <li
+                            className="footer--dropdown-list-item"
+                            onClick={handlePretraga}
+                        >
+                            Pretraga
+                        </li>
+                        <li
+                            className="footer--dropdown-list-item"
+                            onClick={handleFilter}
+                        >
+                            Filter
+                        </li>
                     </ul>
                 ) : null}
             </div>
         </div>
-    )
+    );
 }
