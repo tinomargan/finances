@@ -3,24 +3,24 @@ import { db } from "../config/firebase";
 import { getDocs, collection } from "firebase/firestore";
 
 export default function Header() {
-    const [itemsList, setItemsList] = React.useState([]);
+    const [itemList, setItemList] = React.useState([]);
 
-    const itemsCollectionReference = collection(db, "items");
+    const itemCollectionReference = collection(db, "item");
 
     React.useEffect(() => {
-        const getItemsList = async () => {
+        const getItemList = async () => {
             try {
-                const data = await getDocs(itemsCollectionReference);
+                const data = await getDocs(itemCollectionReference);
                 const filteredData = data.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id
                 }));
-                setItemsList(filteredData);
+                setItemList(filteredData);
             } catch (error) {
                 console.error(error);
             }
         };
-        getItemsList();
+        getItemList();
     }, []);
 
     var totalCurrent = 0;
@@ -39,16 +39,16 @@ export default function Header() {
     /* IZRAČUN - UKUPNO */
 
     function getCurrentSum() {
-        itemsList.map(items => {
-            if (items.incomeExpense === "prihod" && items.paidDate != null) {
+        itemList.map(item => {
+            if (item.incomeExpense === "prihod" && item.paidDate !== null) {
                 totalCurrentPlus =
-                    parseFloat(totalCurrentPlus) + parseFloat(items.amount);
+                    parseFloat(totalCurrentPlus) + parseFloat(item.amount);
             } else if (
-                items.incomeExpense === "trosak" &&
-                items.paidDate != null
+                item.incomeExpense === "trosak" &&
+                item.paidDate !== null
             ) {
                 totalCurrentMinus =
-                    parseFloat(totalCurrentMinus) + parseFloat(items.amount);
+                    parseFloat(totalCurrentMinus) + parseFloat(item.amount);
             }
             totalCurrent = (
                 parseFloat(totalCurrentPlus) - parseFloat(totalCurrentMinus)
@@ -63,21 +63,21 @@ export default function Header() {
     /* IZRAČUN - GOTOVINA */
 
     function getCashSum() {
-        itemsList.map(items => {
+        itemList.map(item => {
             if (
-                items.incomeExpense === "prihod" &&
-                items.paymentType === "gotovina" &&
-                items.paidDate != null
+                item.incomeExpense === "prihod" &&
+                item.paymentType === "gotovina" &&
+                item.paidDate !== null
             ) {
                 totalGotovinaPlus =
-                    parseFloat(totalGotovinaPlus) + parseFloat(items.amount);
+                    parseFloat(totalGotovinaPlus) + parseFloat(item.amount);
             } else if (
-                items.incomeExpense === "trosak" &&
-                items.paymentType === "gotovina" &&
-                items.paidDate != null
+                item.incomeExpense === "trosak" &&
+                item.paymentType === "gotovina" &&
+                item.paidDate !== null
             ) {
                 totalGotovinaMinus =
-                    parseFloat(totalGotovinaMinus) + parseFloat(items.amount);
+                    parseFloat(totalGotovinaMinus) + parseFloat(item.amount);
             }
             totalGotovina = (
                 parseFloat(totalGotovinaPlus) - parseFloat(totalGotovinaMinus)
@@ -92,21 +92,21 @@ export default function Header() {
     /* IZRAČUN - KARTICA */
 
     function getCardSum() {
-        itemsList.map(items => {
+        itemList.map(item => {
             if (
-                items.incomeExpense === "prihod" &&
-                items.paymentType === "kartica" &&
-                items.paidDate != null
+                item.incomeExpense === "prihod" &&
+                item.paymentType === "kartica" &&
+                item.paidDate !== null
             ) {
                 totalKarticaPlus =
-                    parseFloat(totalKarticaPlus) + parseFloat(items.amount);
+                    parseFloat(totalKarticaPlus) + parseFloat(item.amount);
             } else if (
-                items.incomeExpense === "trosak" &&
-                items.paymentType === "kartica" &&
-                items.paidDate != null
+                item.incomeExpense === "trosak" &&
+                item.paymentType === "kartica" &&
+                item.paidDate !== null
             ) {
                 totalKarticaMinus =
-                    parseFloat(totalKarticaMinus) + parseFloat(items.amount);
+                    parseFloat(totalKarticaMinus) + parseFloat(item.amount);
             }
             totalKartica = (
                 parseFloat(totalKarticaPlus) - parseFloat(totalKarticaMinus)
@@ -121,13 +121,13 @@ export default function Header() {
     /* IZRAČUN - BUDUĆE STANJE */
 
     function getTotalSum() {
-        itemsList.map(items => {
-            if (items.incomeExpense === "prihod") {
+        itemList.map(item => {
+            if (item.incomeExpense === "prihod") {
                 totalUkupnoPlus =
-                    parseFloat(totalUkupnoPlus) + parseFloat(items.amount);
+                    parseFloat(totalUkupnoPlus) + parseFloat(item.amount);
             } else {
                 totalUkupnoMinus =
-                    parseFloat(totalUkupnoMinus) + parseFloat(items.amount);
+                    parseFloat(totalUkupnoMinus) + parseFloat(item.amount);
             }
             totalUkupno = (
                 parseFloat(totalUkupnoPlus) - parseFloat(totalUkupnoMinus)

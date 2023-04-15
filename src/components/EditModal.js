@@ -4,36 +4,38 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { db } from "../config/firebase";
-import { collection, Timestamp, updateDoc } from "firebase/firestore";
-import Content from "./Content";
+import { doc, collection, Timestamp, updateDoc } from "firebase/firestore";
 
-const EditModal = ({ selectedItem, show, close }) => {
-    const itemsCollectionReference = collection(db, "items");
+const EditModal = ({ selectedItem, show, close, ask }) => {
+    const itemCollectionReference = collection(db, "item");
+    const selectedItemRef = doc(db, "item", selectedItem.id);
 
     const todayDate = new Date().toLocaleDateString("en-ca");
 
-    /* INICIJALNE VRIJEDNOSTI */
-
-    const [editItem, setEditItem] = React.useState(selectedItem);
-
-    /* PROBA EDIT */
-
-    /* const editItem = async (id, desc) => {
-        const desc = desc;
-        await updateDoc()
-    }
-    
-    const setEditItem = () => {
-        console.log(desc);
+    /* if (selectedItem.eventDate !== null) {
+        selectedItem.eventDate = new Date(
+            selectedItem.eventDate.seconds * 1000
+        ).toLocaleDateString("en-ca");
     } */
+
+    /* if (selectedItem.paidDate !== null) {
+        selectedItem.paidDate = new Date(
+            selectedItem.paidDate.seconds * 1000
+        ).toLocaleDateString("en-ca");
+    } */
+
+    console.log(selectedItem);
+
+    const [editItem, setEditItem] = React.useState({
+        ...selectedItem,
+        eventDate: selectedItem.eventDateForEditModal,
+        paidDate: selectedItem.paidDateForEditModal
+    });
 
     /* EVIDENTIRANJE PROMJENA */
 
     const handleChange = e => {
-        console.log(e.target.value);
         setEditItem(prevEditItem => {
-            console.log(e.target.value);
-
             return {
                 ...prevEditItem,
                 [e.target.name]:
@@ -48,6 +50,7 @@ const EditModal = ({ selectedItem, show, close }) => {
         if (e.target.id === "danas-event-date") {
             document.getElementById("eventDate").value = todayDate;
             e.target.value = todayDate;
+            console.log("Today date: ", todayDate);
             e.target.name = "eventDate";
             handleChange(e);
         } else if (e.target.id === "danas-paid-date") {
@@ -61,40 +64,44 @@ const EditModal = ({ selectedItem, show, close }) => {
     /* SPREMANJE STAVKE U BAZU */
 
     const handleSave = async () => {
-        console.log(editItem.dateCreated);
         try {
-            if (editItem.eventDate != null) {
-                const eD = new Timestamp();
-                eD.seconds = Date.parse(editItem.eventDate) / 1000;
-                eD.nanoseconds = 0;
-                editItem.eventDate = eD;
+            if (editItem.eventDate !== null) {
+                const firebaseEventDate = new Timestamp();
+                firebaseEventDate.seconds =
+                    Date.parse(editItem.eventDate) / 1000;
+                firebaseEventDate.nanoseconds = 0;
+                editItem.eventDate = firebaseEventDate;
             }
 
-            if (editItem.paidDate != null) {
-                const pD = new Timestamp();
-                pD.seconds = Date.parse(editItem.paidDate) / 1000;
-                pD.nanoseconds = 0;
-                editItem.paidDate = pD;
+            if (editItem.paidDate !== null) {
+                const firebasePaidDate = new Timestamp();
+                firebasePaidDate.seconds = Date.parse(editItem.paidDate) / 1000;
+                firebasePaidDate.nanoseconds = 0;
+                editItem.paidDate = firebasePaidDate;
             }
 
-            const dC = new Timestamp();
-            dC.seconds = Date.parse(editItem.dateCreated) / 1000;
-            dC.nanoseconds = 0;
-            editItem.dateCreated = dC;
+            editItem.dateCreated = todayDate;
+            let firebaseDateCreated = null;
+            firebaseDateCreated = new Timestamp();
+            firebaseDateCreated.seconds =
+                Date.parse(editItem.dateCreated) / 1000;
+            firebaseDateCreated.nanoseconds = 0;
+            editItem.dateCreated = firebaseDateCreated;
 
-            await updateDoc(itemsCollectionReference, {
+            await updateDoc(selectedItemRef, {
                 ...editItem,
                 amount: parseFloat(editItem.amount)
             });
 
-            /* getItemsList(); */
+            /* getItemList(); */
         } catch (error) {
             console.error(error);
         }
         close();
     };
+    console.log("Event date: ", editItem.eventDate);
+    console.log("Paid date: ", editItem.paidDate);
 
-    console.log(selectedItem);
     return (
         <div>
             <Modal show={show} onHide={close}>
@@ -207,21 +214,7 @@ const EditModal = ({ selectedItem, show, close }) => {
                 <Modal.Footer>
                     <Button
                         variant="secondary"
-                        /* onClick={
-                            editItem.desc != ""
-                            ? ask
-                            : editItem.amount != 0
-                                ? ask
-                                : editItem.incomeExpense != null
-                                    ? ask
-                                    : editItem.paymentType != null
-                                        ? ask
-                                        : editItem.eventDate != null
-                                            ? ask
-                                            : editItem.paidDate != null
-                                                ? ask
-                                                : close
-                        } */
+                        /* onClick={ask} */ onClick={close}
                     >
                         Odustani
                     </Button>

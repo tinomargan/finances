@@ -8,7 +8,7 @@ import search_icon from "../images/search-icon.png";
 import AreYouSureModal from "./AreYouSureModal";
 import NewItemModal from "./NewItemModal";
 
-export default function Footer(props) {
+export default function Footer() {
     const [showNewItemModal, setShowNewItemModal] = React.useState(false);
     const [showAreYouSureModal, setShowAreYouSureModal] = React.useState(false);
 
@@ -21,8 +21,8 @@ export default function Footer(props) {
     };
 
     const handleOdustani = () => {
-        handleNewItemModalClose();
         setShowAreYouSureModal(false);
+        handleNewItemModalClose();
     };
 
     const handleNemojOdustati = () => {

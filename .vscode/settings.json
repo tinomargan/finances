@@ -1,5 +1,6 @@
 {
     "prettier.tabWidth": 4,
     "prettier.configPath": ".prettierrc",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "prettier.singleAttributePerLine": true
 }

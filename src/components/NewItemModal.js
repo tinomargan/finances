@@ -5,12 +5,9 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { db } from "../config/firebase";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
-import getItemsList from "./Content";
 
-/* const { Formik } = formik; */
-
-const NewItemModal = props => {
-    const itemsCollectionReference = collection(db, "items");
+const NewItemModal = ({ show, ask, close }) => {
+    const itemCollectionReference = collection(db, "item");
 
     const todayDate = new Date().toLocaleDateString("en-ca");
 
@@ -29,13 +26,32 @@ const NewItemModal = props => {
     /* EVIDENTIRANJE PROMJENA */
 
     const handleChange = e => {
-        console.log(e.target.value);
         setNewItem(newItem => ({
             ...newItem,
             [e.target.name]:
                 e.target.type === "radio" ? e.target.id : e.target.value
         }));
     };
+
+    /* JE LI KORISNIK KRENUO UNOSITI VRIJEDNOSTI */
+
+    /* function startedToInputValues() {
+        if (newItem.desc !== "") {
+            ask;
+        } else if (newItem.amount !== 0) {
+            ask;
+        } else if (newItem.incomeExpense != null) {
+            ask;
+        } else if (newItem.paymentType != null) {
+            ask;
+        } else if (newItem.eventDate != null) {
+            ask;
+        } else if (newItem.paidDate != null) {
+            ask;
+        } else {
+            close;
+        }
+    } */
 
     /* GUMB "DANAS" */
 
@@ -57,53 +73,44 @@ const NewItemModal = props => {
 
     const handleSave = async () => {
         try {
-            if (newItem.eventDate != null) {
-                const eD = new Timestamp();
-                eD.seconds = Date.parse(newItem.eventDate) / 1000;
-                eD.nanoseconds = 0;
-                newItem.eventDate = eD;
+            if (newItem.eventDate !== null) {
+                const firebaseEventDate = new Timestamp();
+                firebaseEventDate.seconds =
+                    Date.parse(newItem.eventDate) / 1000;
+                firebaseEventDate.nanoseconds = 0;
+                newItem.eventDate = firebaseEventDate;
             }
 
-            if (newItem.paidDate != null) {
-                const pD = new Timestamp();
-                pD.seconds = Date.parse(newItem.paidDate) / 1000;
-                pD.nanoseconds = 0;
-                newItem.paidDate = pD;
+            if (newItem.paidDate !== null) {
+                const firebasePaidDate = new Timestamp();
+                firebasePaidDate.seconds = Date.parse(newItem.paidDate) / 1000;
+                firebasePaidDate.nanoseconds = 0;
+                newItem.paidDate = firebasePaidDate;
             }
 
             newItem.dateCreated = todayDate;
-            let dC = null;
-            dC = new Timestamp();
-            dC.seconds = Date.parse(newItem.dateCreated) / 1000;
-            dC.nanoseconds = 0;
-            newItem.dateCreated = dC;
-            console.log(newItem.dateCreated);
+            let firebaseDateCreated = null;
+            firebaseDateCreated = new Timestamp();
+            firebaseDateCreated.seconds =
+                Date.parse(newItem.dateCreated) / 1000;
+            firebaseDateCreated.nanoseconds = 0;
+            newItem.dateCreated = firebaseDateCreated;
 
-            await addDoc(itemsCollectionReference, {
-                desc: newItem.desc,
-                incomeExpense: newItem.incomeExpense,
-                amount: parseFloat(newItem.amount),
-                paymentType: newItem.paymentType,
-                eventDate: newItem.eventDate,
-                paidDate: newItem.paidDate,
-                dateCreated: newItem.dateCreated
+            await addDoc(itemCollectionReference, {
+                ...newItem,
+                amount: parseFloat(newItem.amount)
             });
 
-            /* getItemsList(); */
+            /* getItemList(); */
         } catch (error) {
             console.error(error);
         }
-        props.close();
+        close();
     };
 
     return (
         <div>
-            <Modal
-                show={props.show}
-                onHide={props.close}
-                fullscreen
-                animation={false}
-            >
+            <Modal show={show} onHide={close} fullscreen animation={false}>
                 <Modal.Header>
                     <Modal.Title>Nova stavka</Modal.Title>
                 </Modal.Header>
@@ -216,19 +223,19 @@ const NewItemModal = props => {
                     <Button
                         variant="secondary"
                         onClick={
-                            newItem.desc != ""
-                                ? props.ask
-                                : newItem.amount != 0
-                                ? props.ask
-                                : newItem.incomeExpense != null
-                                ? props.ask
-                                : newItem.paymentType != null
-                                ? props.ask
-                                : newItem.eventDate != null
-                                ? props.ask
-                                : newItem.paidDate != null
-                                ? props.ask
-                                : props.close
+                            newItem.desc !== ""
+                                ? ask
+                                : newItem.amount !== 0
+                                ? ask
+                                : newItem.incomeExpense !== null
+                                ? ask
+                                : newItem.paymentType !== null
+                                ? ask
+                                : newItem.eventDate !== null
+                                ? ask
+                                : newItem.paidDate !== null
+                                ? ask
+                                : close
                         }
                     >
                         Odustani

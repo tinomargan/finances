@@ -2,32 +2,42 @@ import React from "react";
 import edit_icon from "../images/edit-icon.png";
 import EditModal from "./EditModal";
 import { db } from "../config/firebase";
-import { doc, getDocs, collection, updateDoc } from "firebase/firestore";
+import { getDocs, collection } from "firebase/firestore";
 import AreYouSureModal from "./AreYouSureModal";
 
-export default function Content(props) {
-    const [itemsList, setItemsList] = React.useState([]);
+export default function Content() {
+    const [itemList, setItemList] = React.useState([]);
     const [showEditModal, setShowEditModal] = React.useState(false);
     const [selectedItem, setSelectedItem] = React.useState(null);
+    const [showAreYouSureModal, setShowAreYouSureModal] = React.useState(false);
+
+    const handleOdustani = () => {
+        setShowAreYouSureModal(false);
+        setShowEditModal(false);
+    };
+
+    const handleNemojOdustati = () => {
+        setShowAreYouSureModal(false);
+    };
 
     /* DOHVAĆANJE STAVKI IZ BAZE */
 
-    const itemsCollectionReference = collection(db, "items");
+    const itemCollectionReference = collection(db, "item");
 
     React.useEffect(() => {
-        const getItemsList = async () => {
+        const getItemList = async () => {
             try {
-                const data = await getDocs(itemsCollectionReference);
+                const data = await getDocs(itemCollectionReference);
                 const filteredData = data.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id
                 }));
-                setItemsList(filteredData);
+                setItemList(filteredData);
             } catch (error) {
                 console.error(error);
             }
         };
-        getItemsList();
+        getItemList();
     }, []);
 
     return (
@@ -37,66 +47,73 @@ export default function Content(props) {
                     show={showEditModal}
                     close={() => setShowEditModal(false)}
                     selectedItem={selectedItem}
+                    /* ask={() => setShowAreYouSureModal(true)} */
                 />
             )}
-            {itemsList.map(items => (
-                <div className="content--item" key={items.id}>
-                    <div className="content--item-desc">{items.desc}</div>
+            <AreYouSureModal
+                show={showAreYouSureModal}
+                odustani={() => handleOdustani()}
+                nemojOdustati={() => handleNemojOdustati()}
+            />
+            {itemList.map(item => (
+                <div className="content--item" key={item.id}>
+                    <div className="content--item-desc">{item.desc}</div>
                     <div className="content--item-eventDate-text">
-                        {items.eventDate != null ? "Datum događaja" : null}
+                        {item.eventDate !== null ? "Datum događaja" : null}
                     </div>
                     <div className="content--item-eventDate">
-                        {items.eventDate != null
-                            ? new Date(
-                                  items.eventDate.seconds * 1000
-                              ).toLocaleDateString("en-ca")
+                        {item.eventDate !== null
+                            ? (item.eventDateForEditModal = new Date(
+                                  item.eventDate.seconds * 1000
+                              ).toLocaleDateString("en-ca"))
                             : null}
                     </div>
                     <div className="content--item-paidDate-text">
-                        {items.paidDate != null ? "Plaćeno" : null}
+                        {item.paidDate !== null ? "Plaćeno" : null}
                     </div>
                     <div className="content--item-paidDate">
-                        {items.paidDate != null
-                            ? new Date(
-                                  items.paidDate.seconds * 1000
-                              ).toLocaleDateString("en-ca")
+                        {item.paidDate !== null
+                            ? (item.paidDateForEditModal = new Date(
+                                  item.paidDate.seconds * 1000
+                              ).toLocaleDateString("en-ca"))
                             : null}
-                        {/* { new Date(items.paidDate.seconds*1000).toLocaleDateString('en-ca') } */}
+                        {/* { new Date(item.paidDate.seconds*1000).toLocaleDateString('en-ca') } */}
                     </div>
                     <div
                         className="content--item-amount-eur"
                         style={
-                            items.incomeExpense === "prihod"
+                            item.incomeExpense === "prihod"
                                 ? { color: "green" }
                                 : { color: "darkred" }
                         }
                     >
-                        {items.amount.toLocaleString(undefined, {
+                        {item.amount.toLocaleString(undefined, {
                             maximumFractionDigits: 2,
                             minimumFractionDigits: 2
                         })}{" "}
                         €
                     </div>
                     <div className="content--item-amount-hrk">
-                        {(items.amount * 7.5345).toLocaleString(undefined, {
+                        {(item.amount * 7.5345).toLocaleString(undefined, {
                             maximumFractionDigits: 2,
                             minimumFractionDigits: 2
                         })}{" "}
                         HRK
                     </div>
                     <div className="content--item-cash-card">
-                        {items.paymentType != null
-                            ? items.paymentType.charAt(0).toUpperCase() +
-                              items.paymentType.slice(1)
+                        {item.paymentType !== null
+                            ? item.paymentType.charAt(0).toUpperCase() +
+                              item.paymentType.slice(1)
                             : "/"}
                     </div>
                     <div className="content--item-edit">
                         <img
                             src={edit_icon}
+                            alt="edit"
                             className="content--item-edit-img"
                             onClick={() => {
                                 setShowEditModal(true);
-                                setSelectedItem(items);
+                                setSelectedItem(item);
                             }}
                         />
                     </div>
