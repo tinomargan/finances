@@ -33,9 +33,12 @@ export default function Footer() {
 
     const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
-    const handleIsOpen = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-        console.log(isDropdownOpen);
+    const handleToggleOpen = () => {
+        if (isDropdownOpen) {
+            setIsDropdownOpen(false);
+        } else {
+            setIsDropdownOpen(true);
+        }
     };
 
     const handleNovaStavka = () => {
@@ -56,7 +59,34 @@ export default function Footer() {
 
     /* CLOSE THE DROPDOWN MENU ON OUTSIDE CLICK */
 
-    /* */
+    const useOutsideClick = callback => {
+        const dropdownRef = React.useRef();
+
+        React.useEffect(() => {
+            const handleClick = event => {
+                if (
+                    dropdownRef.current &&
+                    !dropdownRef.current.contains(event.target)
+                ) {
+                    callback();
+                }
+            };
+
+            document.addEventListener("click", handleClick);
+
+            return () => {
+                document.removeEventListener("click", handleClick);
+            };
+        }, [dropdownRef]);
+
+        return dropdownRef;
+    };
+
+    const handleClickOutside = () => {
+        setIsDropdownOpen(false);
+    };
+
+    const dropdownRef = useOutsideClick(handleClickOutside);
 
     return (
         <div className={"footer--wrapper"}>
@@ -87,11 +117,12 @@ export default function Footer() {
             <div className="footer--item-3">TROŠKOVI</div>
             <div
                 className="footer--item-4"
-                onClick={handleIsOpen} /* ref={dropdownRef} */
+                onClick={handleToggleOpen}
+                ref={dropdownRef}
             >
                 <img src={dots_icon} className="footer--item-4-img" />
             </div>
-            <div className="footer--dropdown" /* ref={dropdownRef} */>
+            <div className="footer--dropdown">
                 {isDropdownOpen ? (
                     <ul className="footer--dropdown-list">
                         <li

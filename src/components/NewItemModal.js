@@ -35,23 +35,23 @@ const NewItemModal = ({ show, ask, close }) => {
 
     /* JE LI KORISNIK KRENUO UNOSITI VRIJEDNOSTI */
 
-    /* function startedToInputValues() {
+    function startedToInputValues() {
         if (newItem.desc !== "") {
-            ask;
+            ask();
         } else if (newItem.amount !== 0) {
-            ask;
+            ask();
         } else if (newItem.incomeExpense != null) {
-            ask;
+            ask();
         } else if (newItem.paymentType != null) {
-            ask;
+            ask();
         } else if (newItem.eventDate != null) {
-            ask;
+            ask();
         } else if (newItem.paidDate != null) {
-            ask;
+            ask();
         } else {
-            close;
+            close();
         }
-    } */
+    }
 
     /* GUMB "DANAS" */
 
@@ -223,7 +223,8 @@ const NewItemModal = ({ show, ask, close }) => {
                     <Button
                         variant="secondary"
                         onClick={
-                            newItem.desc !== ""
+                            startedToInputValues
+                            /* newItem.desc !== ""
                                 ? ask
                                 : newItem.amount !== 0
                                 ? ask
@@ -235,7 +236,7 @@ const NewItemModal = ({ show, ask, close }) => {
                                 ? ask
                                 : newItem.paidDate !== null
                                 ? ask
-                                : close
+                                : close */
                         }
                     >
                         Odustani

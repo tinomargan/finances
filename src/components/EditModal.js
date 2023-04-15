@@ -4,27 +4,14 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { db } from "../config/firebase";
-import { doc, collection, Timestamp, updateDoc } from "firebase/firestore";
+import { doc, Timestamp, updateDoc, deleteDoc } from "firebase/firestore";
 
 const EditModal = ({ selectedItem, show, close, ask }) => {
-    const itemCollectionReference = collection(db, "item");
     const selectedItemRef = doc(db, "item", selectedItem.id);
 
     const todayDate = new Date().toLocaleDateString("en-ca");
 
-    /* if (selectedItem.eventDate !== null) {
-        selectedItem.eventDate = new Date(
-            selectedItem.eventDate.seconds * 1000
-        ).toLocaleDateString("en-ca");
-    } */
-
-    /* if (selectedItem.paidDate !== null) {
-        selectedItem.paidDate = new Date(
-            selectedItem.paidDate.seconds * 1000
-        ).toLocaleDateString("en-ca");
-    } */
-
-    console.log(selectedItem);
+    /* INICIJALNE VRIJEDNOSTI */
 
     const [editItem, setEditItem] = React.useState({
         ...selectedItem,
@@ -80,13 +67,13 @@ const EditModal = ({ selectedItem, show, close, ask }) => {
                 editItem.paidDate = firebasePaidDate;
             }
 
-            editItem.dateCreated = todayDate;
-            let firebaseDateCreated = null;
-            firebaseDateCreated = new Timestamp();
-            firebaseDateCreated.seconds =
-                Date.parse(editItem.dateCreated) / 1000;
-            firebaseDateCreated.nanoseconds = 0;
-            editItem.dateCreated = firebaseDateCreated;
+            editItem.dateUpdated = todayDate;
+            let firebaseDateUpdated = null;
+            firebaseDateUpdated = new Timestamp();
+            firebaseDateUpdated.seconds =
+                Date.parse(editItem.dateUpdated) / 1000;
+            firebaseDateUpdated.nanoseconds = 0;
+            editItem.dateUpdated = firebaseDateUpdated;
 
             await updateDoc(selectedItemRef, {
                 ...editItem,
@@ -99,8 +86,17 @@ const EditModal = ({ selectedItem, show, close, ask }) => {
         }
         close();
     };
-    console.log("Event date: ", editItem.eventDate);
-    console.log("Paid date: ", editItem.paidDate);
+
+    /* BRISANJE STAVKE IZ BAZE */
+
+    const handleDelete = async () => {
+        try {
+            await deleteDoc(selectedItemRef);
+        } catch (error) {
+            console.error(error);
+        }
+        close();
+    };
 
     return (
         <div>
@@ -211,16 +207,29 @@ const EditModal = ({ selectedItem, show, close, ask }) => {
                         </Form.Group>
                     </Form>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button
-                        variant="secondary"
-                        /* onClick={ask} */ onClick={close}
-                    >
-                        Odustani
-                    </Button>
-                    <Button variant="primary" onClick={handleSave}>
-                        Spremi promjene
-                    </Button>
+                <Modal.Footer
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between"
+                    }}
+                >
+                    <div>
+                        <Button variant="danger" onClick={handleDelete}>
+                            Izbriši stavku
+                        </Button>
+                    </div>
+                    <div>
+                        <Button
+                            variant="secondary"
+                            /* onClick={ask} */ onClick={close}
+                            className="mx-2"
+                        >
+                            Odustani
+                        </Button>
+                        <Button variant="primary" onClick={handleSave}>
+                            Spremi promjene
+                        </Button>
+                    </div>
                 </Modal.Footer>
             </Modal>
         </div>
