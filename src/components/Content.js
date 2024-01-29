@@ -2,14 +2,17 @@ import React from "react";
 import edit_icon from "../images/edit-icon.png";
 import EditModal from "./EditModal";
 import { db } from "../config/firebase";
-import { getDocs, collection } from "firebase/firestore";
+import { getDocs, collection, getFirestore, query, orderBy } from "firebase/firestore";
 import AreYouSureModal from "./AreYouSureModal";
+import { Spinner } from "react-bootstrap";
 
 export default function Content() {
+
     const [itemList, setItemList] = React.useState([]);
     const [showEditModal, setShowEditModal] = React.useState(false);
     const [selectedItem, setSelectedItem] = React.useState(null);
     const [showAreYouSureModal, setShowAreYouSureModal] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
 
     const handleOdustani = () => {
         setShowAreYouSureModal(false);
@@ -20,25 +23,49 @@ export default function Content() {
         setShowAreYouSureModal(false);
     };
 
+    /* RELOAD CONTENT */
+
+    const reload = () => window.location.reload();
+
     /* DOHVAĆANJE STAVKI IZ BAZE */
 
-    const itemCollectionReference = collection(db, "item");
-
     React.useEffect(() => {
-        const getItemList = async () => {
+        const fetchItemList = async () => {
             try {
-                const data = await getDocs(itemCollectionReference);
-                const filteredData = data.docs.map(doc => ({
+                const firestoreInstance = getFirestore();
+                const itemCollectionReference = collection(firestoreInstance, "item");
+                const sortedItems = query(itemCollectionReference, orderBy("dateCreated", "desc"))
+                const data = await getDocs(sortedItems);
+                const filteredData = data.docs.map((doc) => ({
                     ...doc.data(),
                     id: doc.id
                 }));
                 setItemList(filteredData);
+                setLoading(false);
             } catch (error) {
                 console.error(error);
+                setLoading(false);
             }
         };
-        getItemList();
+
+        fetchItemList();
     }, []);
+
+    /* LOADING SPINNER */
+
+    if (loading) {
+        return (
+            <div className="loading-indicator">
+                <Spinner animation="border" role="status" variant="secondary">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            </div>
+        );
+    }
+
+    /* SORTIRANJE STAVKI IZ BAZE */
+
+    console.log(itemList);
 
     return (
         <div className="content--wrapper">
@@ -47,7 +74,7 @@ export default function Content() {
                     show={showEditModal}
                     close={() => setShowEditModal(false)}
                     selectedItem={selectedItem}
-                    /* ask={() => setShowAreYouSureModal(true)} */
+                    reload={reload}
                 />
             )}
             <AreYouSureModal
@@ -64,8 +91,8 @@ export default function Content() {
                     <div className="content--item-eventDate">
                         {item.eventDate !== null
                             ? (item.eventDateForEditModal = new Date(
-                                  item.eventDate.seconds * 1000
-                              ).toLocaleDateString("en-ca"))
+                                item.eventDate.seconds * 1000
+                            ).toLocaleDateString("en-ca"))
                             : null}
                     </div>
                     <div className="content--item-paidDate-text">
@@ -74,10 +101,9 @@ export default function Content() {
                     <div className="content--item-paidDate">
                         {item.paidDate !== null
                             ? (item.paidDateForEditModal = new Date(
-                                  item.paidDate.seconds * 1000
-                              ).toLocaleDateString("en-ca"))
+                                item.paidDate.seconds * 1000
+                            ).toLocaleDateString("en-ca"))
                             : null}
-                        {/* { new Date(item.paidDate.seconds*1000).toLocaleDateString('en-ca') } */}
                     </div>
                     <div
                         className="content--item-amount-eur"
@@ -103,7 +129,7 @@ export default function Content() {
                     <div className="content--item-cash-card">
                         {item.paymentType !== null
                             ? item.paymentType.charAt(0).toUpperCase() +
-                              item.paymentType.slice(1)
+                            item.paymentType.slice(1)
                             : "/"}
                     </div>
                     <div className="content--item-edit">

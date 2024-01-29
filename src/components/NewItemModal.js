@@ -4,12 +4,71 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { db } from "../config/firebase";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { addDoc, collection, getDocs, getFirestore, orderBy, query, Timestamp } from "firebase/firestore";
+import NewCategoryModal from "./NewCategoryModal";
+/* import { Spinner } from "react-bootstrap"; */
 
-const NewItemModal = ({ show, ask, close }) => {
+const NewItemModal = ({ show, ask, close, reload, reloadCategoryList, newCategory }) => {
+
+    const [categoryList, setCategoryList] = React.useState([]);
     const itemCollectionReference = collection(db, "item");
 
     const todayDate = new Date().toLocaleDateString("en-ca");
+    const todayDateForDateCreatedAndDateModified = new Date().toUTCString();
+
+    /* const [loading, setLoading] = React.useState(true); */
+
+    /* DOHVAĆANJE KATEGORIJA IZ BAZE */
+
+    React.useEffect(() => {
+        const fetchCategoryList = async () => {
+            try {
+                const firestoreInstance = getFirestore();
+                const categoryCollectionReference = collection(firestoreInstance, "category");
+                const sortedCategories = query(categoryCollectionReference, orderBy("name", "asc"))
+                const data = await getDocs(sortedCategories);
+                const filteredData = data.docs.map((doc) => ({
+                    ...doc.data(),
+                    id: doc.id
+                }));
+                setCategoryList(filteredData);
+                /* setLoading(false); */
+            } catch (error) {
+                console.error(error);
+                /* setLoading(false); */
+            }
+        };
+
+        fetchCategoryList();
+    }, []);
+
+    /*  const fetchUpdatedCategoryList = async () => {
+         try {
+             const firestoreInstance = getFirestore();
+             const categoryCollectionReference = collection(firestoreInstance, "category");
+             const sortedCategories = query(categoryCollectionReference, orderBy("name", "asc"))
+             const data = await getDocs(sortedCategories);
+             const updatedData = data.docs.map((doc) => ({
+                 ...doc.data(),
+                 id: doc.id
+             }));
+             setCategoryList(updatedData);
+         } catch (error) {
+             console.error(error);
+         }
+     }; */
+
+    /* LOADING SPINNER */
+
+    /* if (loading) {
+        return (
+            <div className="loading-indicator">
+                <Spinner animation="border" role="status" variant="secondary">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            </div>
+        );
+    } */
 
     /* INICIJALNE VRIJEDNOSTI */
 
@@ -20,18 +79,24 @@ const NewItemModal = ({ show, ask, close }) => {
         paymentType: null,
         eventDate: null,
         paidDate: null,
-        dateCreated: todayDate
+        dateCreated: todayDateForDateCreatedAndDateModified,
+        category: "Razno"
     });
 
     /* EVIDENTIRANJE PROMJENA */
 
     const handleChange = e => {
+        if (e.target.value === "+ Dodaj novu kategoriju") {
+            console.log(e.target.value);
+            newCategory();
+        }
         setNewItem(newItem => ({
             ...newItem,
             [e.target.name]:
                 e.target.type === "radio" ? e.target.id : e.target.value
         }));
     };
+
 
     /* JE LI KORISNIK KRENUO UNOSITI VRIJEDNOSTI */
 
@@ -47,6 +112,8 @@ const NewItemModal = ({ show, ask, close }) => {
         } else if (newItem.eventDate != null) {
             ask();
         } else if (newItem.paidDate != null) {
+            ask();
+        } else if (newItem.category !== "Razno") {
             ask();
         } else {
             close();
@@ -88,7 +155,7 @@ const NewItemModal = ({ show, ask, close }) => {
                 newItem.paidDate = firebasePaidDate;
             }
 
-            newItem.dateCreated = todayDate;
+            newItem.dateCreated = todayDateForDateCreatedAndDateModified;
             let firebaseDateCreated = null;
             firebaseDateCreated = new Timestamp();
             firebaseDateCreated.seconds =
@@ -100,12 +167,12 @@ const NewItemModal = ({ show, ask, close }) => {
                 ...newItem,
                 amount: parseFloat(newItem.amount)
             });
-
-            /* getItemList(); */
+            console.log();
         } catch (error) {
             console.error(error);
         }
         close();
+        reload();
     };
 
     return (
@@ -186,8 +253,6 @@ const NewItemModal = ({ show, ask, close }) => {
                             <Form.Control
                                 name="eventDate"
                                 type="date"
-                                /* onFocus={(e) => e.currentTarget.focus()} */
-                                /* defaultValue={newItem.eventDate} */
                                 onChange={handleChange}
                             />
                             <Button
@@ -206,7 +271,6 @@ const NewItemModal = ({ show, ask, close }) => {
                             <Form.Control
                                 name="paidDate"
                                 type="date"
-                                /* onFocus={(e) => console.log(e)} */
                                 onChange={handleChange}
                             />
                             <Button
@@ -217,27 +281,33 @@ const NewItemModal = ({ show, ask, close }) => {
                                 Danas
                             </Button>
                         </Form.Group>
+                        <Form.Group
+                            className="mb-3 d-flex align-items-end"
+                            controlId="category"
+                        >
+                            <Form.Select
+                                name="category"
+                                type="select"
+                                defaultValue={"Razno"}
+                                onChange={handleChange}
+                            >
+                                {categoryList.map(category => (
+                                    <option
+                                        value={category.name}
+                                        key={category.id}
+                                    >
+                                        {category.name}
+                                    </option>
+                                ))}
+                                <option>+ Dodaj novu kategoriju</option>
+                            </Form.Select>
+                        </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
                         variant="secondary"
-                        onClick={
-                            startedToInputValues
-                            /* newItem.desc !== ""
-                                ? ask
-                                : newItem.amount !== 0
-                                ? ask
-                                : newItem.incomeExpense !== null
-                                ? ask
-                                : newItem.paymentType !== null
-                                ? ask
-                                : newItem.eventDate !== null
-                                ? ask
-                                : newItem.paidDate !== null
-                                ? ask
-                                : close */
-                        }
+                        onClick={startedToInputValues}
                     >
                         Odustani
                     </Button>

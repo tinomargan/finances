@@ -6,10 +6,12 @@ import InputGroup from "react-bootstrap/InputGroup";
 import { db } from "../config/firebase";
 import { doc, Timestamp, updateDoc, deleteDoc } from "firebase/firestore";
 
-const EditModal = ({ selectedItem, show, close, ask }) => {
+const EditModal = ({ selectedItem, show, close, ask, reload }) => {
+
     const selectedItemRef = doc(db, "item", selectedItem.id);
 
     const todayDate = new Date().toLocaleDateString("en-ca");
+    const todayDateForDateCreatedAndDateModified = new Date().toUTCString();
 
     /* INICIJALNE VRIJEDNOSTI */
 
@@ -67,7 +69,7 @@ const EditModal = ({ selectedItem, show, close, ask }) => {
                 editItem.paidDate = firebasePaidDate;
             }
 
-            editItem.dateUpdated = todayDate;
+            editItem.dateUpdated = todayDateForDateCreatedAndDateModified;
             let firebaseDateUpdated = null;
             firebaseDateUpdated = new Timestamp();
             firebaseDateUpdated.seconds =
@@ -79,12 +81,11 @@ const EditModal = ({ selectedItem, show, close, ask }) => {
                 ...editItem,
                 amount: parseFloat(editItem.amount)
             });
-
-            /* getItemList(); */
         } catch (error) {
             console.error(error);
         }
         close();
+        reload();
     };
 
     /* BRISANJE STAVKE IZ BAZE */
@@ -96,6 +97,7 @@ const EditModal = ({ selectedItem, show, close, ask }) => {
             console.error(error);
         }
         close();
+        reload();
     };
 
     return (

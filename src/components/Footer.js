@@ -5,12 +5,20 @@ import expenses_icon from "../images/expenses-icon.png";
 import filter_icon from "../images/filter-icon.png";
 import income_icon from "../images/income-icon.png";
 import search_icon from "../images/search-icon.png";
+import { db } from "../config/firebase";
+import { addDoc, collection, getDocs, getFirestore, orderBy, query, Timestamp } from "firebase/firestore";
 import AreYouSureModal from "./AreYouSureModal";
 import NewItemModal from "./NewItemModal";
+import NewCategoryModal from "./NewCategoryModal";
+import CategoriesListModal from "./Categories";
 
 export default function Footer() {
+
     const [showNewItemModal, setShowNewItemModal] = React.useState(false);
     const [showAreYouSureModal, setShowAreYouSureModal] = React.useState(false);
+    const [showNewCategoryModal, setShowNewCategoryModal] = React.useState(false);
+    const [showCategoriesListModal, setShowCategoriesListModal] = React.useState(false);
+    const [categoryList, setCategoryList] = React.useState([]);
 
     const handleNewItemModalAsk = () => {
         setShowAreYouSureModal(true);
@@ -28,6 +36,30 @@ export default function Footer() {
     const handleNemojOdustati = () => {
         setShowAreYouSureModal(false);
     };
+
+
+    /* RELOAD CONTENT */
+
+    const reload = () => window.location.reload();
+
+    /* const reloadCategoryList = async () => {
+        try {
+            // Fetch the latest category list from the database
+            const firestoreInstance = getFirestore();
+            const categoryCollectionReference = collection(firestoreInstance, "category");
+            const sortedCategories = query(categoryCollectionReference, orderBy("name", "asc"));
+            const data = await getDocs(sortedCategories);
+            const updatedCategoryList = data.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id
+            }));
+            setCategoryList(updatedCategoryList);
+
+            console.log("Category list reloaded:", updatedCategoryList); // Add this log
+        } catch (error) {
+            console.error(error);
+        }
+    }; */
 
     /* DROPDOWN MENU */
 
@@ -47,13 +79,19 @@ export default function Footer() {
         setShowNewItemModal(true);
     };
 
+    const handleKategorije = () => {
+        console.log("Kategorije");
+        setIsDropdownOpen(false);
+        setShowCategoriesListModal(true);
+    };
+
     const handlePretraga = () => {
         console.log("Pretraga");
         setIsDropdownOpen(false);
     };
 
-    const handleFilter = () => {
-        console.log("Filter");
+    const handleSortiraj = () => {
+        console.log("Sortiraj");
         setIsDropdownOpen(false);
     };
 
@@ -94,11 +132,25 @@ export default function Footer() {
                 show={showNewItemModal}
                 ask={() => handleNewItemModalAsk()}
                 close={() => handleNewItemModalClose()}
+                newCategory={() => setShowNewCategoryModal(true)}
+                reload={reload}
+                /* reloadCategoryList={reloadCategoryList} */
+                categoryList={categoryList}
             />
             <AreYouSureModal
                 show={showAreYouSureModal}
                 odustani={() => handleOdustani()}
                 nemojOdustati={() => handleNemojOdustati()}
+            />
+            <NewCategoryModal
+                show={showNewCategoryModal}
+                close={() => setShowNewCategoryModal(false)}
+                reload={reload}
+            /* reloadCategoryList={reloadCategoryList} */
+            />
+            <CategoriesListModal
+                show={showCategoriesListModal}
+                close={() => setShowCategoriesListModal(false)}
             />
             {/* <div className="footer--item-1">
                 <img src={all_icon} className="footer--item-1-img"/>
@@ -133,15 +185,21 @@ export default function Footer() {
                         </li>
                         <li
                             className="footer--dropdown-list-item"
+                            onClick={handleKategorije}
+                        >
+                            Kategorije
+                        </li>
+                        <li
+                            className="footer--dropdown-list-item"
                             onClick={handlePretraga}
                         >
                             Pretraga
                         </li>
                         <li
                             className="footer--dropdown-list-item"
-                            onClick={handleFilter}
+                            onClick={handleSortiraj}
                         >
-                            Filter
+                            Sortiraj
                         </li>
                     </ul>
                 ) : null}
